@@ -6,8 +6,6 @@ terraform.tfstate.backup
 *.tfstate.backup
 crash.log
 
-# Sensitive variable files (optional)
-*.tfvars
 
 # Kubeconfig or output files
 kubeconfig
