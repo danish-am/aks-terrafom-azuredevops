@@ -54,7 +54,6 @@ stages:
             ARM_TENANT_ID: $(ARM-TENANT-ID)
             ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
 
-
         - publish: tfplan
           artifact: terraform-plan
 
@@ -65,7 +64,7 @@ stages:
   condition: succeeded()
   jobs:
     - deployment: ApplyJob
-      environment: 'apply-env'   # Triggers manual approval
+      environment: 'apply-env'   # Manual approval required
       pool:
         name: ubuntuagent
       strategy:
@@ -94,7 +93,6 @@ stages:
                   ARM_TENANT_ID: $(ARM-TENANT-ID)
                   ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
 
-
               - script: terraform apply -auto-approve tfplan
                 displayName: "Terraform Apply"
                 env:
@@ -104,13 +102,14 @@ stages:
                   ARM_TENANT_ID: $(ARM-TENANT-ID)
                   ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
 
-
 # ────────── Release: Destroy ──────────
 - stage: Destroy
   displayName: "Release: Terraform Destroy"
+  dependsOn: Apply
+  condition: succeeded()
   jobs:
     - deployment: DestroyJob
-      environment: 'destroy-env' 
+      environment: 'destroy-env'  # Manual approval required
       pool:
         name: ubuntuagent
       strategy:
