@@ -220,7 +220,3 @@ Once everything is configured:
 # 🎯 Final Objective
 
 > Automate AKS cluster provisioning securely, reliably, and efficiently using Terraform, Azure DevOps Pipelines, and Azure Key Vault.
-
----
-
-# ✅ Done!
