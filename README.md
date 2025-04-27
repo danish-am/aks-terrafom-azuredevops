@@ -167,7 +167,7 @@ Once setup is completed:
    - **Terraform Plan**
    - **Terraform Apply**
 4. Monitor pipeline execution through the Azure DevOps portal.
-Note: In the azure devops portal do a variable group link from the libraray
+and  also In the azure devops portal do a variable group link from the library
 ---
 
 ## 📈 Best Practices and Notes
