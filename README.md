@@ -1,8 +1,3 @@
-Of course! 🙌  
-Here’s your full `README.md` with the **Setup Prerequisites** section properly formatted into a clean table, along with small polishings to the whole file for better presentation:
-
----
-
 # 🚀 AKS Provisioning with Terraform and Azure DevOps Pipelines
 
 This repository demonstrates **end-to-end automation** for deploying an **Azure Kubernetes Service (AKS)** cluster using **Terraform**, integrated with **Azure DevOps Pipelines** for continuous infrastructure delivery.  
