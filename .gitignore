@@ -1,0 +1,13 @@
+# Terraform files
+.terraform/
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate
+*.tfstate.backup
+crash.log
+
+# Sensitive variable files (optional)
+*.tfvars
+
+# Kubeconfig or output files
+kubeconfig
