@@ -7,7 +7,6 @@ This repository demonstrates **end-to-end automation** for deploying an **Azure 
 ## 📖 Table of Contents
 
 - [Overview](#overview)
-- [Technologies Used](#technologies-used)
 - [Repository Structure](#repository-structure)
 - [Setup Prerequisites](#setup-prerequisites)
 - [Detailed Setup Instructions](#detailed-setup-instructions)
@@ -18,8 +17,6 @@ This repository demonstrates **end-to-end automation** for deploying an **Azure 
 - [Permissions Required](#permissions-required)
 - [Running the Pipeline](#running-the-pipeline)
 - [Best Practices and Notes](#best-practices-and-notes)
-- [References](#references)
-
 ---
 
 ## 🧩 Overview
@@ -33,21 +30,11 @@ The infrastructure deployment is automated through **Azure DevOps Pipelines**, e
 
 ---
 
-## 🛠 Technologies Used
-
-- **Terraform** (`v1.x`)
-- **Azure Kubernetes Service (AKS)**
-- **Azure Key Vault** (Secrets Management)
-- **Azure DevOps Pipelines (YAML-based CI/CD)**
-- **Azure Storage Account** (Terraform state backend)
-- **Service Principals** for authentication
-
 ---
 
 ## 📂 Repository Structure
 
-> ✅ **All code and pipeline YAML definitions are located directly under the `main` branch.**  
-There are no separate directories like `/terraform` or `/pipelines`.
+> ✅ **All code and pipeline YAML definitions are located directly under the `main` branch.** 
 
 Key files:
 - `main.tf` — Main Terraform configuration.
@@ -64,14 +51,12 @@ Key files:
 
 Before proceeding:
 
-| Requirement | Status |
-|:------------|:-------|
-| Azure Subscription | ✅ |
-| Azure DevOps Project | ✅ |
-| Terraform Installed (Pipeline Agent) | ✅ |
-| Azure Key Vault | ✅ |
-| Azure Storage Account (Terraform State) | ✅ |
-| Service Principal (App Registration) | ✅ |
+Step | Description
+1. Azure CLI Configured | Install and authenticate Azure CLI locally or on the agent. Install Azure CLI
+2. Self-Hosted Agent (Optional) | Recommended for better control and faster execution. If parallelism is approved in Microsoft-hosted agents, self-hosted agents are not required.
+3. Backend Configuration | Setup the Terraform remote backend by creating:  ➔ A Resource Group  ➔ A Storage Account  ➔ A Blob Container  ➔ A State Key (e.g., aks-cluster.terraform.tfstate)
+4. Service Connection (Azure RM) | Create an App Registration (Service Principal) in Azure AD, assign it Contributor access to your subscription, and create an Azure Resource Manager Service Connection in Azure DevOps.
+5. GitHub OAuth Integration | Configure GitHub OAuth in Azure DevOps to enable code synchronization and automated CI/CD triggers.
 
 ---
 
@@ -205,15 +190,6 @@ Once everything is configured:
 - **Version lock** Terraform and provider versions for consistent deployments.
 - **Consider approvals and gates** in pipelines for production environments.
 - Always follow **least privilege principle** for Service Principals.
-
----
-
-## 📚 References
-
-- [Terraform - AzureRM Provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs)
-- [Azure Key Vault Overview](https://learn.microsoft.com/en-us/azure/key-vault/general/overview)
-- [Azure DevOps Pipelines Documentation](https://learn.microsoft.com/en-us/azure/devops/pipelines/?view=azure-devops)
-- [Terraform Backends - Azure Storage Account](https://learn.microsoft.com/en-us/azure/developer/terraform/store-state-in-azure-storage)
 
 ---
 
