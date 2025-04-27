@@ -1,13 +1,12 @@
 trigger:
-  - main  
+  - main
 
 pool:
-  name: ubuntuagent  
+  name: ubuntuagent
 
 variables:
-  - group: aks-backend-kv-group  #  Pulling ARM_ACCESS_KEY from Key Vault
+  - group: aks-backend-kv-group
 
- # Backend configuration variables
   - name: backend_resource_group
     value: "tfstate-backend-aksrg"
   - name: backend_storage_account
@@ -21,7 +20,7 @@ steps:
   - task: TerraformInstaller@1
     displayName: "Install Terraform"
     inputs:
-      terraformVersion: '1.6.6' 
+      terraformVersion: '1.6.6'
 
   - script: |
       terraform init \
@@ -39,8 +38,5 @@ steps:
     env:
       ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
 
-  - script: |
-      terraform apply -auto-approve tfplan
-    displayName: "Terraform Apply"
-    env:
-      ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+  - publish: tfplan
+    artifact: terraform-plan
