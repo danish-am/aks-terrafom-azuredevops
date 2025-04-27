@@ -5,10 +5,17 @@ pool:
   name: ubuntuagent  
 
 variables:
-  backend_resource_group: "tfstate-backend-aksrg"
-  backend_storage_account: "tfstatebackenddanish"
-  backend_container_name: "tfstate"
-  backend_key: "aks-cluster.terraform.tfstate"
+  - group: aks-backend-kv-group  #  Pulling ARM_ACCESS_KEY from Key Vault
+
+ # Backend configuration variables
+  - name: backend_resource_group
+    value: "tfstate-backend-aksrg"
+  - name: backend_storage_account
+    value: "tfstatebackenddanish"
+  - name: backend_container_name
+    value: "tfstate"
+  - name: backend_key
+    value: "aks-cluster.terraform.tfstate"
 
 steps:
   - task: TerraformInstaller@1
@@ -23,11 +30,17 @@ steps:
         -backend-config="container_name=$(backend_container_name)" \
         -backend-config="key=$(backend_key)"
     displayName: "Terraform Init"
+    env:
+      ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
 
   - script: |
       terraform plan -out=tfplan
     displayName: "Terraform Plan"
+    env:
+      ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
 
   - script: |
       terraform apply -auto-approve tfplan
     displayName: "Terraform Apply"
+    env:
+      ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
