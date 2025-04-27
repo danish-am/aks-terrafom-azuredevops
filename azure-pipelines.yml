@@ -39,12 +39,21 @@ stages:
               -backend-config="key=$(backend_key)"
           displayName: "Terraform Init"
           env:
+            ARM_SUBSCRIPTION_ID: $(ARM-SUBSCRIPTION-ID)
+            ARM_CLIENT_ID: $(ARM-CLIENT-ID)
+            ARM_CLIENT_SECRET: $(ARM-CLIENT-SECRET)
+            ARM_TENANT_ID: $(ARM-TENANT-ID)
             ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
 
         - script: terraform plan -out=tfplan
           displayName: "Terraform Plan"
           env:
+            ARM_SUBSCRIPTION_ID: $(ARM-SUBSCRIPTION-ID)
+            ARM_CLIENT_ID: $(ARM-CLIENT-ID)
+            ARM_CLIENT_SECRET: $(ARM-CLIENT-SECRET)
+            ARM_TENANT_ID: $(ARM-TENANT-ID)
             ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+
 
         - publish: tfplan
           artifact: terraform-plan
@@ -79,21 +88,29 @@ stages:
                     -backend-config="key=$(backend_key)"
                 displayName: "Terraform Init"
                 env:
+                  ARM_SUBSCRIPTION_ID: $(ARM-SUBSCRIPTION-ID)
+                  ARM_CLIENT_ID: $(ARM-CLIENT-ID)
+                  ARM_CLIENT_SECRET: $(ARM-CLIENT-SECRET)
+                  ARM_TENANT_ID: $(ARM-TENANT-ID)
                   ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+
 
               - script: terraform apply -auto-approve tfplan
                 displayName: "Terraform Apply"
                 env:
+                  ARM_SUBSCRIPTION_ID: $(ARM-SUBSCRIPTION-ID)
+                  ARM_CLIENT_ID: $(ARM-CLIENT-ID)
+                  ARM_CLIENT_SECRET: $(ARM-CLIENT-SECRET)
+                  ARM_TENANT_ID: $(ARM-TENANT-ID)
                   ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+
 
 # ────────── Release: Destroy ──────────
 - stage: Destroy
   displayName: "Release: Terraform Destroy"
-  dependsOn: Apply
-  condition: succeeded()          # or override with a variable/trigger
   jobs:
     - deployment: DestroyJob
-      environment: 'destroy-env'  # Manual approval before destroy
+      environment: 'destroy-env' 
       pool:
         name: ubuntuagent
       strategy:
@@ -113,9 +130,17 @@ stages:
                     -backend-config="key=$(backend_key)"
                 displayName: "Terraform Init"
                 env:
+                  ARM_SUBSCRIPTION_ID: $(ARM-SUBSCRIPTION-ID)
+                  ARM_CLIENT_ID: $(ARM-CLIENT-ID)
+                  ARM_CLIENT_SECRET: $(ARM-CLIENT-SECRET)
+                  ARM_TENANT_ID: $(ARM-TENANT-ID)
                   ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
 
               - script: terraform destroy -auto-approve
                 displayName: "Terraform Destroy"
                 env:
+                  ARM_SUBSCRIPTION_ID: $(ARM-SUBSCRIPTION-ID)
+                  ARM_CLIENT_ID: $(ARM-CLIENT-ID)
+                  ARM_CLIENT_SECRET: $(ARM-CLIENT-SECRET)
+                  ARM_TENANT_ID: $(ARM-TENANT-ID)
                   ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
