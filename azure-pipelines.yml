@@ -1,42 +1,121 @@
 trigger:
   - main
 
-pool:
-  name: ubuntuagent
+pr:
+  - main
 
 variables:
   - group: aks-backend-kv-group
 
-  - name: backend_resource_group
+  - name: backend_rg
     value: "tfstate-backend-aksrg"
-  - name: backend_storage_account
+  - name: backend_sa
     value: "tfstatebackenddanish"
-  - name: backend_container_name
+  - name: backend_cn
     value: "tfstate"
   - name: backend_key
     value: "aks-cluster.terraform.tfstate"
 
-steps:
-  - task: TerraformInstaller@1
-    displayName: "Install Terraform"
-    inputs:
-      terraformVersion: '1.6.6'
+stages:
 
-  - script: |
-      terraform init \
-        -backend-config="resource_group_name=$(backend_resource_group)" \
-        -backend-config="storage_account_name=$(backend_storage_account)" \
-        -backend-config="container_name=$(backend_container_name)" \
-        -backend-config="key=$(backend_key)"
-    displayName: "Terraform Init"
-    env:
-      ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+# ──────────── Build (Plan) ────────────
+- stage: Plan
+  displayName: "Build: Terraform Plan"
+  jobs:
+    - job: TerraformPlan
+      pool:
+        name: ubuntuagent
+      steps:
+        - task: TerraformInstaller@1
+          displayName: "Install Terraform"
+          inputs:
+            terraformVersion: '1.6.6'
 
-  - script: |
-      terraform plan -out=tfplan
-    displayName: "Terraform Plan"
-    env:
-      ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+        - script: |
+            terraform init \
+              -backend-config="resource_group_name=$(backend_rg)" \
+              -backend-config="storage_account_name=$(backend_sa)" \
+              -backend-config="container_name=$(backend_cn)" \
+              -backend-config="key=$(backend_key)"
+          displayName: "Terraform Init"
+          env:
+            ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
 
-  - publish: tfplan
-    artifact: terraform-plan
+        - script: terraform plan -out=tfplan
+          displayName: "Terraform Plan"
+          env:
+            ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+
+        - publish: tfplan
+          artifact: terraform-plan
+
+# ──────────── Release: Apply ────────────
+- stage: Apply
+  displayName: "Release: Terraform Apply"
+  dependsOn: Plan
+  condition: succeeded()
+  jobs:
+    - deployment: ApplyJob
+      environment: 'apply-env'   # Triggers manual approval
+      pool:
+        name: ubuntuagent
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - download: current
+                artifact: terraform-plan
+
+              - task: TerraformInstaller@1
+                displayName: "Install Terraform"
+                inputs:
+                  terraformVersion: '1.6.6'
+
+              - script: |
+                  terraform init \
+                    -backend-config="resource_group_name=$(backend_rg)" \
+                    -backend-config="storage_account_name=$(backend_sa)" \
+                    -backend-config="container_name=$(backend_cn)" \
+                    -backend-config="key=$(backend_key)"
+                displayName: "Terraform Init"
+                env:
+                  ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+
+              - script: terraform apply -auto-approve tfplan
+                displayName: "Terraform Apply"
+                env:
+                  ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+
+# ────────── Release: Destroy ──────────
+- stage: Destroy
+  displayName: "Release: Terraform Destroy"
+  dependsOn: Apply
+  condition: succeeded()          # or override with a variable/trigger
+  jobs:
+    - deployment: DestroyJob
+      environment: 'destroy-env'  # Manual approval before destroy
+      pool:
+        name: ubuntuagent
+      strategy:
+        runOnce:
+          deploy:
+            steps:
+              - task: TerraformInstaller@1
+                displayName: "Install Terraform"
+                inputs:
+                  terraformVersion: '1.6.6'
+
+              - script: |
+                  terraform init \
+                    -backend-config="resource_group_name=$(backend_rg)" \
+                    -backend-config="storage_account_name=$(backend_sa)" \
+                    -backend-config="container_name=$(backend_cn)" \
+                    -backend-config="key=$(backend_key)"
+                displayName: "Terraform Init"
+                env:
+                  ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
+
+              - script: terraform destroy -auto-approve
+                displayName: "Terraform Destroy"
+                env:
+                  ARM_ACCESS_KEY: $(ARM-ACCESS-KEY)
