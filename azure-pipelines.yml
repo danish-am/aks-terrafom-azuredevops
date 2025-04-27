@@ -1,0 +1,33 @@
+trigger:
+  - main  
+
+pool:
+  name: ubuntuagent  
+
+variables:
+  backend_resource_group: "tfstate-backend-aksrg"
+  backend_storage_account: "tfstatebackenddanish"
+  backend_container_name: "tfstate"
+  backend_key: "aks-cluster.terraform.tfstate"
+
+steps:
+  - task: TerraformInstaller@1
+    displayName: "Install Terraform"
+    inputs:
+      terraformVersion: '1.6.6' 
+
+  - script: |
+      terraform init \
+        -backend-config="resource_group_name=$(backend_resource_group)" \
+        -backend-config="storage_account_name=$(backend_storage_account)" \
+        -backend-config="container_name=$(backend_container_name)" \
+        -backend-config="key=$(backend_key)"
+    displayName: "Terraform Init"
+
+  - script: |
+      terraform plan -out=tfplan
+    displayName: "Terraform Plan"
+
+  - script: |
+      terraform apply -auto-approve tfplan
+    displayName: "Terraform Apply"
